@@ -18,7 +18,7 @@ public class TransformDecorator extends Decorator {
 
         g.transform(this.newTransform);
         this.piece.draw(g);
-        g.transform(oldTransform);
+        g.setTransform(oldTransform);
     }
 
 

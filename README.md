@@ -1,1 +1,1 @@
-"# simple-decorator" 
+# simple-decorator
