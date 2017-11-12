@@ -54,17 +54,19 @@ public class Chessboard extends JPanel {
         image = new ImageIcon("src/main/resources/board3.png").getImage();
         setPreferredSize(new Dimension(image.getWidth(null), image.getHeight(null)));
 
+        AffineTransform dragTransform = new AffineTransform();
+
         this.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mousePressed(MouseEvent ev) {
-                dragged = take((ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE);
+                dragged = new TransformDecorator(take((ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE), dragTransform);
                 mouse = ev.getPoint();
             }
 
             @Override
             public void mouseReleased(MouseEvent ev) {
-                drop(dragged, (ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE);
+                drop(dragged.reverseDecoration(), (ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE);
                 dragged = null;
                 undo.setEnabled(true);
             }
@@ -74,12 +76,13 @@ public class Chessboard extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent ev) {
-                mouse = ev.getPoint();
+                dragTransform.setToTranslation(ev.getX() - mouse.getX(), ev.getY() - mouse.getY());
                 repaint();
             }
         });
     }
 
+    @Override
     public void paint(Graphics g) {
         g.drawImage(image, 0, 0, null);
         for (Map.Entry<Point, Piece> e : board.entrySet()) {
@@ -92,7 +95,7 @@ public class Chessboard extends JPanel {
         }
     }
 
-    public void drop(Piece p, int x, int y) {
+    private void drop(Piece p, int x, int y) {
         repaint();
         p.moveTo(x, y);
         board.put(new Point(x, y), p); // jeśli na tych współrzędnych
@@ -100,7 +103,7 @@ public class Chessboard extends JPanel {
         //(HashMap nie dopuszcza powtórzeń)
     }
 
-    public Piece take(int x, int y) {
+    private Piece take(int x, int y) {
         repaint();
         return board.remove(new Point(x, y));
     }
