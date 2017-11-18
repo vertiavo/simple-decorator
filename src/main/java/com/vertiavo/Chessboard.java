@@ -31,6 +31,9 @@ public class Chessboard extends JPanel {
     private Image image;
     private Piece dragged = null;
     private Point mouse = null;
+    private JButton undo;
+    private JButton redo;
+    private AffineTransform dragTransform;
 
     Chessboard() {
 
@@ -54,13 +57,13 @@ public class Chessboard extends JPanel {
         image = new ImageIcon("src/main/resources/board3.png").getImage();
         setPreferredSize(new Dimension(image.getWidth(null), image.getHeight(null)));
 
-        AffineTransform dragTransform = new AffineTransform();
-
         this.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mousePressed(MouseEvent ev) {
-                dragged = new TransformDecorator(take((ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE), dragTransform);
+                dragged = take((ev.getX() - ZEROX) / PieceImpl.TILESIZE, (ev.getY() - ZEROY) / PieceImpl.TILESIZE);
+                dragTransform = new AffineTransform();
+                dragged = new TransformDecorator(dragged, dragTransform);
                 mouse = ev.getPoint();
             }
 
@@ -86,7 +89,6 @@ public class Chessboard extends JPanel {
     public void paint(Graphics g) {
         g.drawImage(image, 0, 0, null);
         for (Map.Entry<Point, Piece> e : board.entrySet()) {
-            Point pt = e.getKey();
             Piece pc = e.getValue();
             pc.draw((Graphics2D) g);
         }
@@ -120,8 +122,6 @@ public class Chessboard extends JPanel {
             System.out.println("REDO");
         }
     }
-
-    private JButton undo, redo;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Chess");
